@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CHRONON — The Binary Time Standard</title>
+<meta name="description" content="The Chronon (Ch): 1 Ch = 0.8589934592 seconds. A binary quantum time standard born from atomic physics and the native tick of every microchip.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%97%88%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#04060c;
+    --panel:rgba(148,163,184,0.055);
+    --border:rgba(148,163,184,0.14);
+    --border2:rgba(148,163,184,0.22);
+    --text:#e6edf6;
+    --muted:#8fa0b8;
+    --faint:#5b6b82;
+    --accent:#22d3ee;
+    --accent2:#818cf8;
+    --good:#34d399;
+    --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+    --sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    font-size:16px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    z-index:-2;
+    background:
+      radial-gradient(900px 500px at 15% -5%, rgba(34,211,238,0.10), transparent 60%),
+      radial-gradient(900px 600px at 85% 0%, rgba(129,140,248,0.11), transparent 60%),
+      radial-gradient(1000px 700px at 50% 110%, rgba(52,211,153,0.05), transparent 60%),
+      var(--bg);
+  }
+  body::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    z-index:-1;
+    background-image:
+      linear-gradient(rgba(148,163,184,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(148,163,184,0.05) 1px, transparent 1px);
+    background-size:56px 56px;
+    mask-image:radial-gradient(ellipse 90% 70% at 50% 0%, black 30%, transparent 75%);
+  }
+  a{color:var(--accent);text-decoration:none}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+
+  header{position:fixed;top:0;left:0;right:0;z-index:50;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);background:rgba(4,6,12,0.72);border-bottom:1px solid var(--border)}
+  .hdr{display:flex;align-items:center;justify-content:space-between;height:64px;gap:16px}
+  .logo{font-family:var(--mono);font-weight:700;font-size:18px;letter-spacing:0.08em;color:var(--text);display:flex;align-items:center;gap:10px;white-space:nowrap}
+  .logo .mark{color:var(--accent);font-size:22px}
+  nav{display:flex;gap:26px}
+  nav a{font-size:13px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);transition:color .2s}
+  nav a:hover{color:var(--text)}
+  .statuspill{font-family:var(--mono);font-size:11px;letter-spacing:0.12em;color:var(--good);border:1px solid rgba(52,211,153,0.35);background:rgba(52,211,153,0.08);padding:6px 12px;border-radius:999px;display:flex;align-items:center;gap:8px;white-space:nowrap}
+  .statuspill .dot{width:7px;height:7px;border-radius:50%;background:var(--good);box-shadow:0 0 10px var(--good);animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.35}}
+  @media (max-width:860px){ nav{display:none} }
+
+  main{padding:150px 0 90px}
+  .hero{text-align:center}
+  .eyebrow{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;letter-spacing:0.22em;text-transform:uppercase;color:var(--accent);border:1px solid rgba(34,211,238,0.3);background:rgba(34,211,238,0.07);padding:8px 18px;border-radius:999px;margin-bottom:28px}
+  h1{font-size:clamp(2.6rem,6.5vw,4.6rem);font-weight:700;letter-spacing:-0.035em;line-height:1.05;background:linear-gradient(120deg,#f0f6ff 20%,var(--accent) 60%,var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:22px}
+  .sub{max-width:680px;margin:0 auto 54px;color:var(--muted);font-size:17px}
+  .sub strong{color:var(--text);font-weight:600}
+
+  .clockcard{max-width:880px;margin:0 auto;background:linear-gradient(180deg,var(--panel2, rgba(148,163,184,0.09)),var(--panel));border:1px solid var(--border2);border-radius:22px;padding:38px 34px 30px;box-shadow:0 30px 80px -20px rgba(0,0,0,0.7),inset 0 1px 0 rgba(230,237,246,0.06);position:relative;overflow:hidden}
+  .clockcard::before{content:"";position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:420px;height:140px;border-radius:50%;background:radial-gradient(ellipse,rgba(34,211,238,0.16),transparent 70%);pointer-events:none}
+  .clock-top{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:26px;flex-wrap:wrap}
+  .clock-label{font-family:var(--mono);font-size:12px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:10px}
+  .live{display:inline-flex;align-items:center;gap:8px;color:var(--good);font-family:var(--mono);font-size:11px;letter-spacing:0.16em}
+  .live .dot{width:8px;height:8px;border-radius:50%;background:var(--good);box-shadow:0 0 12px var(--good);animation:pulse 1.6s infinite}
+  .seg{display:flex;border:1px solid var(--border);border-radius:10px;overflow:hidden;font-family:var(--mono);font-size:11px}
+  .seg button{background:transparent;border:0;color:var(--muted);padding:7px 14px;cursor:pointer;font-family:var(--mono);font-size:11px;letter-spacing:0.08em}
+  .seg button.on{background:rgba(34,211,238,0.14);color:var(--accent)}
+
+  .chronon-readout{font-family:var(--mono);font-size:clamp(2.4rem,7vw,4.4rem);font-weight:700;line-height:1.05;letter-spacing:-0.02em;font-variant-numeric:tabular-nums;color:#f4f9ff;text-shadow:0 0 42px rgba(34,211,238,0.25);word-break:break-all}
+  .chronon-readout .frac{color:var(--accent2);font-size:0.55em}
+  .chronon-readout .unit{color:var(--accent);font-size:0.42em;vertical-align:super}
+  .chronon-sub{display:flex;gap:26px;flex-wrap:wrap;margin-top:20px;font-family:var(--mono);font-size:12.5px;color:var(--muted);letter-spacing:0.04em}
+  .chronon-sub b{color:var(--accent2);font-weight:600}
+  .std-time{margin-top:26px;padding-top:22px;border-top:1px dashed var(--border);display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;font-family:var(--mono);font-size:13px;color:var(--muted)}
+  .std-time b{color:var(--text);font-weight:600;font-size:15px}
+
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:56px}
+  @media (max-width:900px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .tile{border:1px solid var(--border);border-radius:16px;background:var(--panel);padding:22px 22px 20px}
+  .tile .k{font-family:var(--mono);font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--faint);margin-bottom:12px}
+  .tile .v{font-family:var(--mono);font-size:clamp(1.5rem,3vw,2.1rem);font-weight:700;color:var(--text);font-variant-numeric:tabular-nums}
+  .tile .v em{font-style:normal;color:var(--accent);font-size:0.55em;margin-left:6px}
+  .tile .s{font-size:12.5px;color:var(--muted);margin-top:8px}
+
+  section{padding:70px 0}
+  .sec-head{text-align:center;max-width:720px;margin:0 auto 50px}
+  .sec-tag{font-family:var(--mono);font-size:12px;letter-spacing:0.22em;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
+  h2{font-size:clamp(1.9rem,4vw,2.8rem);font-weight:700;letter-spacing:-0.03em;line-height:1.12;margin-bottom:16px}
+  .sec-sub{color:var(--muted);font-size:16px}
+
+  .units{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  @media (max-width:960px){.units{grid-template-columns:repeat(2,1fr)}}
+  .unit{border:1px solid var(--border);border-radius:18px;background:var(--panel);padding:26px 24px;position:relative;overflow:hidden;transition:transform .25s,border-color .25s}
+  .unit:hover{transform:translateY(-4px);border-color:var(--border2)}
+  .unit .sym{font-family:var(--mono);font-size:12px;letter-spacing:0.2em;color:var(--accent);text-transform:uppercase}
+  .unit .big{font-family:var(--mono);font-size:2.5rem;font-weight:700;color:var(--text);margin:14px 0 2px;line-height:1.1}
+  .unit .rel{font-size:12px;color:var(--faint);font-family:var(--mono);margin-bottom:14px}
+  .unit .row{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-top:1px dashed var(--border);font-size:13.5px}
+  .unit .row span:first-child{color:var(--muted)}
+  .unit .row span:last-child{font-family:var(--mono);color:var(--text)}
+  .unit.featured{border-color:rgba(34,211,238,0.45);background:linear-gradient(180deg,rgba(34,211,238,0.09),var(--panel))}
+  .unit.featured .big{color:var(--accent)}
+
+  .conv{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:start}
+  @media (max-width:900px){.conv{grid-template-columns:1fr}}
+  table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:14px}
+  td{padding:13px 4px;border-bottom:1px solid var(--border)}
+  td:last-child{text-align:right;color:var(--text);font-variant-numeric:tabular-nums}
+  td:first-child{color:var(--muted)}
+  tr.hot td{color:var(--accent)}
+  .conv-form{margin-top:30px;border:1px solid var(--border);border-radius:16px;background:var(--panel);padding:24px}
+  .conv-form label{display:block;font-family:var(--mono);font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:var(--faint);margin-bottom:12px}
+  .conv-form input{width:100%;background:#05070d;border:1px solid var(--border2);border-radius:12px;color:var(--text);font-family:var(--mono);font-size:22px;padding:14px 18px;outline:none}
+  .conv-form input:focus{border-color:var(--accent)}
+  .conv-out{margin-top:16px;font-family:var(--mono);font-size:20px;color:var(--accent)}
+  .conv-out small{display:block;color:var(--muted);font-size:11px;margin-top:6px;letter-spacing:0.08em}
+
+  .wp{display:grid;grid-template-columns:1.1fr 1fr;gap:50px;align-items:center}
+  @media (max-width:900px){.wp{grid-template-columns:1fr}}
+  .cta-row{display:flex;gap:14px;justify-content:center;margin-top:54px;flex-wrap:wrap}
+  .btn{display:inline-flex;align-items:center;gap:10px;font-weight:600;font-size:14.5px;padding:15px 28px;border-radius:14px;cursor:pointer;border:1px solid var(--border2);background:var(--panel);color:var(--text);transition:transform .2s,border-color .2s,background .2s}
+  .btn:hover{transform:translateY(-2px);border-color:rgba(34,211,238,0.5)}
+  .btn.primary{background:linear-gradient(120deg,rgba(34,211,238,0.9),rgba(129,140,248,0.9));color:#04121a;border:0;font-weight:700}
+  .btn.ghost{border-color:rgba(34,211,238,0.4);background:rgba(34,211,238,0.07)}
+
+  .codeblock{background:#05070d;border:1px solid var(--border);border-radius:16px;padding:26px;font-family:var(--mono);font-size:13px;line-height:1.8;overflow-x:auto;color:#b8c6da}
+  .codeblock .c{color:#5b6b82}
+  .codeblock .k{color:#22d3ee}
+  .codeblock .s{color:#34d399}
+
+  footer{border-top:1px solid var(--border);padding:44px 0 54px;margin-top:40px}
+  .ftr{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:center}
+  .ftr .f{font-size:13px;color:var(--faint)}
+  .ftr .t{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease}
+  .reveal.in{opacity:1;transform:none}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap hdr">
+    <a class="logo" href="#top"><span class="mark">◈</span>CHRONON<sup style="font-size:9px;color:var(--faint)">®</sup></a>
+    <nav>
+      <a href="#standard">Standard</a>
+      <a href="#clock">Clock</a>
+      <a href="#units">Units</a>
+      <a href="#whitepaper">Whitepaper</a>
+    </nav>
+    <div class="statuspill"><span class="dot"></span>LIVE</div>
+  </div>
+</header>
+
+<main id="top">
+  <div class="wrap hero">
+    <div class="eyebrow">✦ The Binary Time Standard</div>
+    <h1>Time, engineered<br>in <span style="background:linear-gradient(120deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent">binary.</span></h1>
+    <p class="sub">The <strong>Chronon (Ch)</strong> replaces the second — a duration born from atomic physics and the native binary tick of every microchip, server, satellite and AI system on Earth. No leap seconds. No base-60 conversion bugs. Just pure computation.</p>
+
+    <div class="clockcard">
+      <div class="clock-top">
+        <div class="clock-label"><span class="live"><span class="dot"></span>LIVE</span>&nbsp;&nbsp;CHRONON COUNT</div>
+        <div class="seg" id="modeSeg">
+          <button class="on" data-mode="epoch">UTC EPOCH</button>
+          <button data-mode="session">SESSION</button>
+        </div>
+      </div>
+      <div id="chrononReadout" class="chronon-readout">0<span class="unit">CH</span></div>
+      <div class="chronon-sub">
+        <span>SUB-CHRONON <b id="subCh">0.0</b> mCh</span>
+        <span>1 CHRONON = <b id="chExact">0.8589934592</b> S</span>
+        <span>QUANTUM <b>2<sup>33</sup></b> NS</span>
+        <span>TIME SOURCE · <b>QUARTZ CRYSTAL</b></span>
+      </div>
+      <div class="std-time">
+        <span>STANDARD TIME — <b id="stdTime">00:00:00.000</b></span>
+        <span id="stdDate">—</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="stats">
+      <div class="tile reveal">
+        <div class="k">Chronons / Second</div>
+        <div class="v" id="vChPerSec">1.1641532183<em>Ch</em></div>
+        <div class="s">1 standard second = 1.1641532183 Ch</div>
+      </div>
+      <div class="tile reveal">
+        <div class="k">Nanoseconds / Chronon</div>
+        <div class="v">858,993,459.2<em>ns</em></div>
+        <div class="s">Exact atomic / binary quantum</div>
+      </div>
+      <div class="tile reveal">
+        <div class="k">Beats / Chronon</div>
+        <div class="v">69.85<em>BPM</em></div>
+        <div class="s">1 Ch ≈ one resting heart cycle</div>
+      </div>
+      <div class="tile reveal">
+        <div class="k">Sub-Quantum Resolution</div>
+        <div class="v">0.8389<em>ms</em></div>
+        <div class="s">1 mCh = 1/1024 Ch — frame rate / ping</div>
+      </div>
+    </div>
+  </div>
+
+  <section id="units">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div class="sec-tag">✦ The Hierarchy</div>
+        <h2>Scaling upward in clean binary</h2>
+        <p class="sec-sub">No hours. No minutes. No seconds. Just pure base-2 multiples that feel effortless in code and everyday life.</p>
+      </div>
+      <div class="units">
+        <div class="unit reveal">
+          <div class="sym">Sub-Chronon · mCh</div>
+          <div class="big">0.8389<em style="font-size:.5em;color:var(--muted)">ms</em></div>
+          <div class="rel">1 / 1024 Ch · the heartbeat between heartbeats</div>
+          <div class="row"><span>Relation</span><span>2<sup>-10</sup> Ch</span></div>
+          <div class="row"><span>Practical equivalent</span><span>Frame rate / Ping</span></div>
+        </div>
+        <div class="unit featured reveal">
+          <div class="sym">Chronon · Ch</div>
+          <div class="big">0.8589934592<em style="font-size:.5em;color:var(--muted)">s</em></div>
+          <div class="rel">Base unit · the single heartbeat</div>
+          <div class="row"><span>Relation</span><span>1 Ch</span></div>
+          <div class="row"><span>Replaces</span><span>The Second</span></div>
+          <div class="row"><span>Human cadence</span><span>69.85 BPM</span></div>
+        </div>
+        <div class="unit reveal">
+          <div class="sym">Kilo-Chronon · kCh</div>
+          <div class="big">14m 39.61s</div>
+          <div class="rel">1,024 Ch · binary staircase</div>
+          <div class="row"><span>Relation</span><span>2<sup>10</sup> Ch</span></div>
+          <div class="row"><span>Replaces</span><span>The 15-minute block</span></div>
+          <div class="row"><span>Standard time</span><span>879.39 s</span></div>
+        </div>
+        <div class="unit reveal">
+          <div class="sym">Mega-Chronon · MCh</div>
+          <div class="big">23h 51m 39s</div>
+          <div class="rel">100,000 Ch · binary day</div>
+          <div class="row"><span>Relation</span><span>10<sup>5</sup> Ch</span></div>
+          <div class="row"><span>Replaces</span><span>The Day</span></div>
+          <div class="row"><span>Standard time</span><span>85,899 s</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="conversions" style="padding-top:0">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div class="sec-tag">✦ Quick Conversion Reference</div>
+        <h2>From seconds to chronons</h2>
+        <p class="sec-sub">One Chronon is roughly one second. One second is roughly one-and-a-quarter chronons.</p>
+      </div>
+      <div class="conv">
+        <div class="reveal">
+          <table>
+            <tr><td>1 Chronon (1 Ch)</td><td>0.8589934592 s</td></tr>
+            <tr><td>1 Standard Second</td><td>1.1641532183 Ch</td></tr>
+            <tr><td>1 Standard Minute</td><td>69.84919310 Ch</td></tr>
+            <tr><td>1 Standard Hour</td><td>4,190.951586 Ch</td></tr>
+            <tr class="hot"><td>1 Standard Day</td><td>100,582.8381 Ch</td></tr>
+          </table>
+          <div class="conv-form">
+            <label for="secInput">Convert a standard duration → Chronons</label>
+            <input id="secInput" type="number" step="any" placeholder="Enter seconds…">
+            <div class="conv-out" id="chOut">— <small>CHRONONS</small></div>
+          </div>
+        </div>
+        <div class="reveal">
+          <div class="codeblock">
+<span class="c">$</span> chronon convert <span class="s">3600</span><br>
+→ <span class="k">4,190.951586 Ch</span> <span class="c">// one hour</span><br><br>
+<span class="c">$</span> chronon convert <span class="s">86400</span><br>
+→ <span class="k">100,582.8381 Ch</span> <span class="c">// one day</span><br><br>
+<span class="c"># heartbeats per day</span><br>
+<span class="k">100,582.8381 Ch</span> <span class="c">× 69.85 BPM ≈</span> <span class="s">7,035,000 beats</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="whitepaper">
+    <div class="wrap">
+      <div class="wp">
+        <div class="reveal">
+          <div class="sec-tag">✦ The Whitepaper</div>
+          <h2>One page. One quantum. Infinite precision.</h2>
+          <p class="sec-sub" style="margin-bottom:26px">The fastest path to launching the Chronon as a real standard is publishing a one-page technical whitepaper defining <strong>1 Ch = 2<sup>33</sup> ns</strong> and releasing an open-source Chronon Clock API for developers.</p>
+          <div class="cta-row" style="justify-content:flex-start">
+            <a class="btn primary" href="#whitepaper">Read the Whitepaper</a>
+            <a class="btn ghost" href="#api">Chronon Clock API</a>
+          </div>
+        </div>
+        <div class="reveal" id="api">
+          <div class="codeblock">
+<span class="c">curl https://api.chronon.org/v1/now</span><br>
+HTTP/1.1 <span class="k">200 OK</span><br>
+Content-Type: <span class="s">application/json</span><br><br>
+{<br>
+&nbsp;&nbsp;<span class="k">"chronon"</span>: <span class="s">104829123.4567</span>,<br>
+&nbsp;&nbsp;<span class="k">"nanoseconds"</span>: <span class="s">89999999999</span>,<br>
+&nbsp;&nbsp;<span class="k">"quantum"</span>: <span class="s">"2^33 ns"</span>,<br>
+&nbsp;&nbsp;<span class="k">"resolution"</span>: <span class="s">"0.8589934592 s"</span><br>
+}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap ftr">
+    <div class="f">© 2026 Chronon Standards Initiative</div>
+    <div class="t">1 CHRONON = 0.8589934592 S · 2^33 NS · TIME, IN PERFECT BINARY</div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  const CHRONON_SECONDS = 0.8589934592;
+  const CHRONON_NS = CHRONON_SECONDS * 1e9;   // 858,993,459.2 ns per chronon
+  const MCH = 1024;                            // 1 mCh = 1/1024 Ch
+
+  const SESSION_START_MS = Date.now();
+  let mode = 'epoch';
+
+  const $ = id => document.getElementById(id);
+
+  function elapsedNs(){
+    if (mode === 'session') return performance.now() * 1e6;
+    return Date.now() * 1e6;
+  }
+
+  function tick(){
+    const ch = elapsedNs() / CHRONON_NS;      // native chronon measure — no seconds involved
+    const intCh = Math.floor(ch);
+    const fracCh = ch - intCh;
+    const mChVal = fracCh * MCH;
+
+    const intStr = Math.floor(intCh).toLocaleString('en-US');
+    const fracStr = fracCh.toFixed(4);
+    $('chrononReadout').innerHTML = intStr +
+      '<span class="frac">.' + fracStr + '</span>' +
+      '<span class="unit">CH</span>';
+
+    $('subCh').textContent = mChVal.toFixed(1);
+    $('chExact').textContent = CHRONON_SECONDS.toFixed(10);
+    $('vChPerSec').innerHTML = (1 / CHRONON_SECONDS).toFixed(10) + '<em>Ch</em>';
+
+    const ms = mode === 'session' ? SESSION_START_MS + performance.now() : Date.now();
+    const dt = new Date(ms);
+    const p = n => String(n).padStart(2, '0');
+    $('stdTime').textContent = p(dt.getUTCHours()) + ':' + p(dt.getUTCMinutes()) + ':' + p(dt.getUTCSeconds()) + '.' + String(dt.getUTCMilliseconds()).padStart(3, '0') + ' UTC';
+    $('stdDate').textContent = dt.toUTCString();
+  }
+
+  document.getElementById('modeSeg').addEventListener('click', e => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    document.querySelectorAll('#modeSeg button').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    mode = btn.getAttribute('data-mode');
+    tick();
+  });
+
+  const secInput = $('secInput');
+  const chOut = $('chOut');
+  secInput.addEventListener('input', () => {
+    const s = parseFloat(secInput.value);
+    chOut.innerHTML = (isNaN(s) ? '—' : (s / CHRONON_SECONDS).toFixed(10)) + ' <small>CHRONONS</small>';
+  });
+  secInput.dispatchEvent(new Event('input'));
+
+  tick();
+  requestAnimationFrame(function loop(){ tick(); requestAnimationFrame(loop); });
+
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(en => { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+})();
+</script>
+</body>
+</html>
